@@ -1,0 +1,3 @@
+/home/sloan/桌面/protobuf_client/CMakeFiles/rebuild_cache.dir
+/home/sloan/桌面/protobuf_client/CMakeFiles/edit_cache.dir
+/home/sloan/桌面/protobuf_client/CMakeFiles/Client.dir

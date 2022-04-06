@@ -1,1 +1,0 @@
-/usr/bin/c++    -rdynamic CMakeFiles/Server.dir/Server.cpp.o CMakeFiles/Server.dir/addressbook.pb.cc.o  -o Server  -Wl,-rpath,/usr/local/lib /usr/local/lib/libprotobuf.so -lpthread -llz4 

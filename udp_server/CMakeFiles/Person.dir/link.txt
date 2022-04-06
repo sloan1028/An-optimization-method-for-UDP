@@ -1,1 +1,0 @@
-/usr/bin/c++    -rdynamic CMakeFiles/Person.dir/Person.cpp.o CMakeFiles/Person.dir/addressbook.pb.cc.o  -o Person  -Wl,-rpath,/usr/local/lib /usr/local/lib/libprotobuf.so -lpthread 

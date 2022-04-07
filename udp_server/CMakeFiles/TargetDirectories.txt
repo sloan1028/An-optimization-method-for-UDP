@@ -1,0 +1,3 @@
+/home/sloan/桌面/udp_server/CMakeFiles/rebuild_cache.dir
+/home/sloan/桌面/udp_server/CMakeFiles/edit_cache.dir
+/home/sloan/桌面/udp_server/CMakeFiles/Server.dir

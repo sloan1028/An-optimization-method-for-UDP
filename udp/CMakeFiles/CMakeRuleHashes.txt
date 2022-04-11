@@ -1,0 +1,2 @@
+# Hashes of file build rules.
+69f0cfb469bd37a48268b481f6ef92e5 addressbook.pb.h

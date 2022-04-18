@@ -50,70 +50,15 @@ void out_addr(struct sockaddr_in *clientaddr)
     printf("client: %s(%d) connected\n", ip, port);
 }
 
-bool proto_to_json(const google::protobuf::Message &message, std::string &json)
+void server_sock_init(struct sockaddr_in &sockaddr, char *port)
 {
-    google::protobuf::util::JsonPrintOptions options;
-    options.add_whitespace = true;
-    options.always_print_primitive_fields = true;
-    options.preserve_proto_field_names = true;
-    return MessageToJsonString(message, &json, options).ok();
+    sockaddr.sin_family = AF_INET; // IPv4
+    sockaddr.sin_port = htons(atoi(port));
+    sockaddr.sin_addr.s_addr = INADDR_ANY;
+    bzero(&(sockaddr.sin_zero), 8);
 }
 
-void write_to_file(const char *filename, string str)
-{
-    std::ofstream of(filename, ios::trunc);
-    if (of)
-    {
-        of.write(str.c_str(), str.size());
-        of.close();
-    }
-}
-
-// This function fills in a Person message based on user input.
-void PromptForPerson(tutorial::Person_State *person)
-{
-    cout << "Enter person ID number: ";
-    int id;
-    cin >> id;
-    person->set_player_id(id);
-    cin.ignore(256, '\n');
-
-    cout << "Player name: ";
-    getline(cin, *person->mutable_player_name());
-
-    cout << "Current_Weapon name: ";
-    getline(cin, *person->mutable_current_weapon());
-
-    for (int i = 0; i < 3; i++)
-    {
-        printf("Player Position Now (%d):", i);
-        float p;
-        cin >> p;
-        person->add_player_position(p);
-    }
-
-    while (true)
-    {
-        cin.get();
-        cout << "Enter a weapon (or leave blank to finish): ";
-        string weapon_name;
-        getline(cin, weapon_name);
-        if (weapon_name.empty())
-        {
-            break;
-        }
-        cout << "bullet numsber: ";
-        int bullet;
-        cin >> bullet;
-
-        tutorial::Person_State::Weapon *weapon = person->add_weapons();
-        weapon->set_weapon_name(weapon_name);
-        weapon->set_bullet(bullet);
-    }
-}
-
-static void
-dump_recv(struct rudp *U)
+static void dump_recv(struct rudp *U)
 {
     char tmp[MAX_PACKAGE];
     int n;
@@ -134,6 +79,7 @@ dump_recv(struct rudp *U)
     }
 }
 
+// 打印并发送已经封装的包
 static void dump(struct rudp_package *p, int sockfd)
 {
     static int idx = 0;
@@ -141,11 +87,6 @@ static void dump(struct rudp_package *p, int sockfd)
     printf("%d : ", idx++);
     while (p)
     {
-        /*
-        string str;
-        str.assign(p->buffer, p->sz);
-        cout << "|||" << str << "|||" << endl;
-        */
         memcpy(data, p->buffer, p->sz);
         int i;
         for (i = 0; i < p->sz; i++)
@@ -154,8 +95,9 @@ static void dump(struct rudp_package *p, int sockfd)
         }
         size += p->sz + 1;
         socklen_t len = sizeof(client_sockaddr);
-        cout << "hello" << endl;
-        int send_num = sendto(sockfd, (void *)data, p->sz, 0, (struct sockaddr *)&client_sockaddr, len);
+        int send_num;
+        if (p->sz > 0)
+            send_num = sendto(sockfd, (void *)data, p->sz, 0, (struct sockaddr *)&client_sockaddr, len);
         if (send_num < 0)
         {
             perror("sendto error:");
@@ -164,6 +106,107 @@ static void dump(struct rudp_package *p, int sockfd)
         p = p->next;
     }
     printf("\n");
+}
+
+// A在B上改变了什么
+tutorial::Gamer compare_state(tutorial::Gamer &A, tutorial::Gamer &B)
+{
+    tutorial::Gamer res;
+    auto &people = res.people();
+    for (int i = 0; i < A.people_size(); i++)
+    {
+        const tutorial::Person_State &a = A.people(i);
+        bool found = false, has_changed = false;
+        tutorial::Person_State t;
+        for (int j = 0; j < B.people_size(); j++)
+        {
+            const tutorial::Person_State &b = B.people(j);
+            if (a.player_id() == b.player_id() && a.player_name() == b.player_name())
+            {
+                found = true;
+                t.set_player_id(a.player_id());
+                t.set_player_name(a.player_name());
+                // t->set_player_id(a.player_id());
+                // t->set_player_name(a.player_name());
+                if (a.player_hp() != b.player_hp())
+                {
+                    t.set_player_hp(a.player_hp());
+                    // t->set_player_hp(a.player_hp());
+                    has_changed = true;
+                }
+
+                if (a.player_armor() != b.player_armor())
+                {
+                    t.set_player_armor(a.player_armor());
+                    // t->set_player_armor(a.player_armor());
+                    has_changed = true;
+                }
+
+                if (a.current_weapon() != b.current_weapon())
+                {
+                    t.set_current_weapon(a.current_weapon());
+                    // t->set_current_weapon(a.current_weapon());
+                    has_changed = true;
+                }
+
+                for (int k = 0; k < 3; k++)
+                {
+                    if (a.player_position(k) != b.player_position(k))
+                    {
+                        t.set_player_position(k, a.player_position(k));
+                        // t->set_player_position(k, a.player_position(k));
+                        has_changed = true;
+                    }
+                }
+
+                //武器修改
+                auto w1 = a.weapons();
+                auto w2 = b.weapons();
+
+                for (int k = 0; k < w1.size(); k++)
+                {
+                    bool find = false, changed = false;
+                    auto new_weapon = t.add_weapons();
+                    for (int l = 0; l < w2.size(); l++)
+                    {
+                        if (w1[k].weapon_name() == w2[l].weapon_name())
+                        {
+                            find = true;
+                            if (w1[k].bullet() != w2[l].bullet())
+                            {
+                                changed = true;
+                            }
+                            break;
+                        }
+                    }
+                    if (!find || changed)
+                    {
+                        new_weapon->set_weapon_name(w1[k].weapon_name());
+                        new_weapon->set_bullet(w1[k].bullet());
+                        has_changed = true;
+                    }
+                    else
+                    {
+                        new_weapon->Clear();
+                    }
+                }
+
+                if (has_changed)
+                {
+                    auto new_people = res.add_people();
+                    new_people->CopyFrom(t);
+                }
+                break;
+            }
+        }
+        if (!found)
+        { // 如果没找到说明是新加的
+            auto new_people = res.add_people();
+            new_people->CopyFrom(a);
+        }
+    }
+
+    return res;
 }
 
 // Main function:  Reads the entire address book from a file,
@@ -186,7 +229,7 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    struct sockaddr_in server_sockaddr;
+    struct sockaddr_in serveraddr;
     int recvbytes;
     socklen_t sin_size;
     int client_fd;
@@ -197,20 +240,16 @@ int main(int argc, char *argv[])
         perror("Socket");
         exit(1);
     }
-
     printf("Socket success!,sockfd=%d\n", sockfd);
 
-    server_sockaddr.sin_family = AF_INET; // IPv4
-    server_sockaddr.sin_port = htons(atoi(argv[1]));
-    server_sockaddr.sin_addr.s_addr = INADDR_ANY;
-    bzero(&(server_sockaddr.sin_zero), 8);
-    int len = sizeof(server_sockaddr);
+    server_sock_init(serveraddr, argv[1]);
+    int len = sizeof(serveraddr);
     int recv_num;
     int send_num;
     char send_buf[20] = "i am server!";
     char recv_buf[20];
 
-    if ((bind(sockfd, (struct sockaddr *)&server_sockaddr, sizeof(struct sockaddr))) == -1)
+    if ((bind(sockfd, (struct sockaddr *)&serveraddr, sizeof(struct sockaddr))) == -1)
     {
         perror("bind");
         exit(-1);
@@ -219,28 +258,30 @@ int main(int argc, char *argv[])
     printf("bind success!\n");
     struct rudp *U = rudp_new(1, 5);
 
-    while (1)
+    printf("server wait:\n");
+    recv_num = recvfrom(sockfd, recv_buf, sizeof(recv_buf), 0, (struct sockaddr *)&client_sockaddr, (socklen_t *)&len);
+    if (recv_num < 0)
     {
-        printf("server wait:\n");
-        recv_num = recvfrom(sockfd, recv_buf, sizeof(recv_buf), 0, (struct sockaddr *)&client_sockaddr, (socklen_t *)&len);
-        if (recv_num < 0)
-        {
-            perror("recvfrom error:");
-            exit(1);
-        }
-        out_addr(&client_sockaddr);
+        perror("recvfrom error:");
+        exit(1);
+    }
+    out_addr(&client_sockaddr);
 
-        recv_buf[recv_num] = '\0';
-        printf("server receive %d bytes: %s\n", recv_num, recv_buf);
+    recv_buf[recv_num] = '\0';
+    printf("server receive %d bytes: %s\n", recv_num, recv_buf);
 
-        tutorial::Gamer person_state;
+    tutorial::Gamer person_state;
+    tutorial::Gamer pre_person_state;
+    for (int i = 1; i <= 5; i++)
+    {
+        string file_path = "data/protobuf" + to_string(i) + ".data";
 
         {
             // Read the existing address book.
-            fstream input(argv[2], ios::in | ios::binary);
+            fstream input(file_path, ios::in | ios::binary);
             if (!input)
             {
-                cout << argv[2] << ": File not found.  Creating a new file." << endl;
+                cout << file_path << ": File not found.  Creating a new file." << endl;
             }
             else if (!person_state.ParseFromIstream(&input))
             {
@@ -249,43 +290,25 @@ int main(int argc, char *argv[])
             }
         }
 
-        // Add an person.
-        // PromptForPerson(person_state.add_person());
+        tutorial::Gamer state_difference = compare_state(person_state, pre_person_state);
 
-        char data[1024];
-
-        int size = person_state.ByteSizeLong();
+        int size = state_difference.ByteSizeLong();
         void *buffer = malloc(size);
-        person_state.SerializeToArray(buffer, size);
+        state_difference.SerializeToArray(buffer, size);
+
         /*
         //打印数据
         string str3;
         str3.assign((char *)buffer, size);
         cout << str3 << endl;
         */
-        // protobuf2json
-        /*
-        string json_string;
-        if(!proto_to_json(person_state, json_string)) {
-            std::cout << "protobuf convert json failed!" << std::endl;
-            return -1;
-        }
-
-        write_to_file("data.json", json_string);
-
-
-        std::cout << "protobuf convert json done!" << std::endl
-                << json_string << std::endl;
-        std::cout << "json size: " << json_string.size() << endl;
-        */
-
-        // protobuf2json
 
         // LZ4压缩
         int src_size = size + 1;
         int max_dst_size = LZ4_compressBound(src_size);
         char *dst = new char[max_dst_size];
         int dst_size = LZ4_compress_default((char *)buffer, dst, src_size, max_dst_size);
+
         /*
         send_num = sendto(sockfd, dst, dst_size, 0, (struct sockaddr *)&client_sockaddr, len);
         if (send_num < 0)
@@ -294,8 +317,7 @@ int main(int argc, char *argv[])
             exit(1);
         }
         */
-        char t1[] = "abcd";
-        char t2[] = "efgh";
+
         cout << "dst_size :" << dst_size << endl;
         rudp_send(U, dst, dst_size);
 
@@ -304,16 +326,9 @@ int main(int argc, char *argv[])
         delete[] dst;
         dst = NULL;
 
-        /*
-        {
-        // Write the new address book back to disk.
-        fstream output(argv[1], ios::out | ios::trunc | ios::binary);
-        if (!person_state.SerializeToOstream(&output)) {
-            cerr << "Failed to write person state." << endl;
-            return -1;
-        }
-        }
-        */
+        pre_person_state = person_state;
+
+        sleep(1);
     }
 
     // Optional:  Delete all global objects allocated by libprotobuf.

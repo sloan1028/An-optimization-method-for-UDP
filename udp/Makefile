@@ -124,6 +124,19 @@ Server/fast:
 .PHONY : Server/fast
 
 #=============================================================================
+# Target rules for targets named ModifyData
+
+# Build rule for target.
+ModifyData: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 ModifyData
+.PHONY : ModifyData
+
+# fast build rule for target.
+ModifyData/fast:
+	$(MAKE) -f CMakeFiles/ModifyData.dir/build.make CMakeFiles/ModifyData.dir/build
+.PHONY : ModifyData/fast
+
+#=============================================================================
 # Target rules for targets named Client
 
 # Build rule for target.
@@ -163,6 +176,33 @@ Client.cpp.s:
 	$(MAKE) -f CMakeFiles/Client.dir/build.make CMakeFiles/Client.dir/Client.cpp.s
 .PHONY : Client.cpp.s
 
+ModifyData.o: ModifyData.cpp.o
+
+.PHONY : ModifyData.o
+
+# target to build an object file
+ModifyData.cpp.o:
+	$(MAKE) -f CMakeFiles/ModifyData.dir/build.make CMakeFiles/ModifyData.dir/ModifyData.cpp.o
+.PHONY : ModifyData.cpp.o
+
+ModifyData.i: ModifyData.cpp.i
+
+.PHONY : ModifyData.i
+
+# target to preprocess a source file
+ModifyData.cpp.i:
+	$(MAKE) -f CMakeFiles/ModifyData.dir/build.make CMakeFiles/ModifyData.dir/ModifyData.cpp.i
+.PHONY : ModifyData.cpp.i
+
+ModifyData.s: ModifyData.cpp.s
+
+.PHONY : ModifyData.s
+
+# target to generate assembly for a file
+ModifyData.cpp.s:
+	$(MAKE) -f CMakeFiles/ModifyData.dir/build.make CMakeFiles/ModifyData.dir/ModifyData.cpp.s
+.PHONY : ModifyData.cpp.s
+
 Server.o: Server.cpp.o
 
 .PHONY : Server.o
@@ -197,6 +237,7 @@ addressbook.pb.o: addressbook.pb.cc.o
 # target to build an object file
 addressbook.pb.cc.o:
 	$(MAKE) -f CMakeFiles/Server.dir/build.make CMakeFiles/Server.dir/addressbook.pb.cc.o
+	$(MAKE) -f CMakeFiles/ModifyData.dir/build.make CMakeFiles/ModifyData.dir/addressbook.pb.cc.o
 	$(MAKE) -f CMakeFiles/Client.dir/build.make CMakeFiles/Client.dir/addressbook.pb.cc.o
 .PHONY : addressbook.pb.cc.o
 
@@ -207,6 +248,7 @@ addressbook.pb.i: addressbook.pb.cc.i
 # target to preprocess a source file
 addressbook.pb.cc.i:
 	$(MAKE) -f CMakeFiles/Server.dir/build.make CMakeFiles/Server.dir/addressbook.pb.cc.i
+	$(MAKE) -f CMakeFiles/ModifyData.dir/build.make CMakeFiles/ModifyData.dir/addressbook.pb.cc.i
 	$(MAKE) -f CMakeFiles/Client.dir/build.make CMakeFiles/Client.dir/addressbook.pb.cc.i
 .PHONY : addressbook.pb.cc.i
 
@@ -217,6 +259,7 @@ addressbook.pb.s: addressbook.pb.cc.s
 # target to generate assembly for a file
 addressbook.pb.cc.s:
 	$(MAKE) -f CMakeFiles/Server.dir/build.make CMakeFiles/Server.dir/addressbook.pb.cc.s
+	$(MAKE) -f CMakeFiles/ModifyData.dir/build.make CMakeFiles/ModifyData.dir/addressbook.pb.cc.s
 	$(MAKE) -f CMakeFiles/Client.dir/build.make CMakeFiles/Client.dir/addressbook.pb.cc.s
 .PHONY : addressbook.pb.cc.s
 
@@ -229,10 +272,14 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
 	@echo "... Server"
+	@echo "... ModifyData"
 	@echo "... Client"
 	@echo "... Client.o"
 	@echo "... Client.i"
 	@echo "... Client.s"
+	@echo "... ModifyData.o"
+	@echo "... ModifyData.i"
+	@echo "... ModifyData.s"
 	@echo "... Server.o"
 	@echo "... Server.i"
 	@echo "... Server.s"

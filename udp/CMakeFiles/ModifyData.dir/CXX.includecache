@@ -6,7 +6,7 @@
 
 #IncludeRegexTransform: 
 
-/home/sloan/桌面/udp/Server.cpp
+/home/sloan/桌面/udp/ModifyData.cpp
 iostream
 -
 fstream
@@ -42,8 +42,6 @@ stdlib.h
 errno.h
 -
 google/protobuf/util/json_util.h
--
-lz4.h
 -
 rudp.h
 /home/sloan/桌面/udp/rudp.h

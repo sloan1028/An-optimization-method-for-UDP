@@ -31,3 +31,11 @@ add_executable(Server Server.cpp ${PROTO_SRCS} ${PROTO_HDRS})
 
 target_link_libraries(Server ${PROTOBUF_LIBRARIES})
 target_link_libraries(Server lz4)
+
+include_directories(${PROTOBUF_INCLUDE_DIRS})
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS addressbook.proto)
+message(${PROTO_SRCS} ${PROTO_HDRS})
+add_executable(ModifyData ModifyData.cpp ${PROTO_SRCS} ${PROTO_HDRS})
+
+target_link_libraries(ModifyData ${PROTOBUF_LIBRARIES})

@@ -35,16 +35,16 @@
   },
   {
    "player_id": 3,
-   "player_name": "jjj",
-   "current_weapon": "arm",
+   "player_name": "cjj",
+   "current_weapon": "golden arm",
    "weapon2bullet": {},
    "player_position": [
-    0,
-    0,
-    0.5
+    1,
+    2,
+    3
    ],
-   "player_hp": 0,
-   "player_armor": 0,
+   "player_hp": 100,
+   "player_armor": 100,
    "weapons": [
     {
      "Weapon_name": "awm",
@@ -164,6 +164,67 @@
      "bullet": 0
     }
    ]
+  },
+  {
+   "player_id": 89,
+   "player_name": "kf",
+   "current_weapon": "elbow",
+   "weapon2bullet": {},
+   "player_position": [
+    5,
+    5,
+    5
+   ],
+   "player_hp": 0,
+   "player_armor": 0,
+   "weapons": []
+  },
+  {
+   "player_id": 67,
+   "player_name": "imay",
+   "current_weapon": "elbow",
+   "weapon2bullet": {},
+   "player_position": [
+    7,
+    7,
+    7
+   ],
+   "player_hp": 0,
+   "player_armor": 0,
+   "weapons": []
+  },
+  {
+   "player_id": 92,
+   "player_name": "switch",
+   "current_weapon": "chopsticks",
+   "weapon2bullet": {},
+   "player_position": [
+    100,
+    100,
+    100
+   ],
+   "player_hp": 96,
+   "player_armor": 50,
+   "weapons": [
+    {
+     "Weapon_name": "spoon",
+     "bullet": 0
+    }
+   ]
+  },
+  {
+   "player_id": 77,
+   "player_name": "clearlove",
+   "current_weapon": "love",
+   "weapon2bullet": {},
+   "player_position": [
+    0,
+    0,
+    0
+   ],
+   "player_hp": 100,
+   "player_armor": 90,
+   "weapons": []
   }
  ]
 }

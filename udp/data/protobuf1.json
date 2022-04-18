@@ -164,6 +164,34 @@
      "bullet": 0
     }
    ]
+  },
+  {
+   "player_id": 89,
+   "player_name": "kf",
+   "current_weapon": "elbow",
+   "weapon2bullet": {},
+   "player_position": [
+    5,
+    5,
+    5
+   ],
+   "player_hp": 0,
+   "player_armor": 0,
+   "weapons": []
+  },
+  {
+   "player_id": 67,
+   "player_name": "imay",
+   "current_weapon": "elbow",
+   "weapon2bullet": {},
+   "player_position": [
+    7,
+    7,
+    7
+   ],
+   "player_hp": 0,
+   "player_armor": 0,
+   "weapons": []
   }
  ]
 }

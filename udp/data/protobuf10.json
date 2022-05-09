@@ -10,24 +10,12 @@
     2.4,
     3.6
    ],
-   "player_hp": 100,
-   "player_armor": 100,
+   "player_hp": 0,
+   "player_armor": 0,
    "weapons": [
     {
      "Weapon_name": "arm",
      "bullet": 0
-    },
-    {
-     "Weapon_name": "m4a1",
-     "bullet": 100
-    },
-    {
-     "Weapon_name": "rocket gun",
-     "bullet": 10
-    },
-    {
-     "Weapon_name": "fighter plane",
-     "bullet": 1
     }
    ]
   },
@@ -74,9 +62,14 @@
     2,
     3
    ],
-   "player_hp": 0,
-   "player_armor": 0,
-   "weapons": []
+   "player_hp": 100,
+   "player_armor": 100,
+   "weapons": [
+    {
+     "Weapon_name": "m16",
+     "bullet": 300
+    }
+   ]
   },
   {
    "player_id": 6,
@@ -88,11 +81,15 @@
     30,
     30
    ],
-   "player_hp": 0,
-   "player_armor": 0,
+   "player_hp": 100,
+   "player_armor": 100,
    "weapons": [
     {
      "Weapon_name": "arm",
+     "bullet": 0
+    },
+    {
+     "Weapon_name": "keyboard",
      "bullet": 0
     }
    ]
@@ -236,21 +233,139 @@
    ],
    "player_hp": 100,
    "player_armor": 90,
-   "weapons": []
+   "weapons": [
+    {
+     "Weapon_name": "pig",
+     "bullet": 777
+    }
+   ]
   },
   {
    "player_id": 88,
-   "player_name": "lodman",
-   "current_weapon": "kar-98",
+   "player_name": "money man",
+   "current_weapon": "money",
+   "weapon2bullet": {},
+   "player_position": [
+    1.2,
+    2.1,
+    3.2
+   ],
+   "player_hp": 1,
+   "player_armor": 1,
+   "weapons": []
+  },
+  {
+   "player_id": 16,
+   "player_name": "westbrook",
+   "current_weapon": "strong hand",
+   "weapon2bullet": {},
+   "player_position": [
+    5,
+    0,
+    0
+   ],
+   "player_hp": 100,
+   "player_armor": 0,
+   "weapons": [
+    {
+     "Weapon_name": "little gun",
+     "bullet": 3
+    }
+   ]
+  },
+  {
+   "player_id": 23,
+   "player_name": "james",
+   "current_weapon": "donot know",
+   "weapon2bullet": {},
+   "player_position": [
+    0,
+    0,
+    100
+   ],
+   "player_hp": 100,
+   "player_armor": 100,
+   "weapons": [
+    {
+     "Weapon_name": "good brain",
+     "bullet": 0
+    }
+   ]
+  },
+  {
+   "player_id": 98,
+   "player_name": "lwt",
+   "current_weapon": "daju",
    "weapon2bullet": {},
    "player_position": [
     1,
     2,
-    3
+    5
    ],
    "player_hp": 100,
-   "player_armor": 9,
+   "player_armor": 100,
+   "weapons": [
+    {
+     "Weapon_name": "kinfe",
+     "bullet": 0
+    }
+   ]
+  },
+  {
+   "player_id": 97,
+   "player_name": "spider man",
+   "current_weapon": "silk",
+   "weapon2bullet": {},
+   "player_position": [
+    0,
+    0,
+    999
+   ],
+   "player_hp": 100,
+   "player_armor": 0,
    "weapons": []
+  },
+  {
+   "player_id": 101,
+   "player_name": "iron man",
+   "current_weapon": "x-ray",
+   "weapon2bullet": {},
+   "player_position": [
+    100,
+    100,
+    500
+   ],
+   "player_hp": 100,
+   "player_armor": 1000,
+   "weapons": [
+    {
+     "Weapon_name": "money",
+     "bullet": 100000
+    }
+   ]
+  },
+  {
+   "player_id": 96,
+   "player_name": "Dr.strange",
+   "current_weapon": "magic",
+   "weapon2bullet": {},
+   "player_position": [
+    -1,
+    -1,
+    -1
+   ],
+   "player_hp": 100,
+   "player_armor": 0,
+   "weapons": [
+    {
+     "Weapon_name": "cloak",
+     "bullet": 0
+    },
+    {
+     "Weapon_name": "magic book",
+     "bullet": 0
+    }
+   ]
   }
  ]
 }

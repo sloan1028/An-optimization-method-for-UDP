@@ -35,16 +35,16 @@
   },
   {
    "player_id": 3,
-   "player_name": "cjj",
-   "current_weapon": "golden arm",
+   "player_name": "jjj",
+   "current_weapon": "arm",
    "weapon2bullet": {},
    "player_position": [
-    1,
-    2,
-    3
+    0,
+    0,
+    0.5
    ],
-   "player_hp": 100,
-   "player_armor": 100,
+   "player_hp": 0,
+   "player_armor": 0,
    "weapons": [
     {
      "Weapon_name": "awm",
@@ -224,27 +224,61 @@
    ],
    "player_hp": 100,
    "player_armor": 90,
-   "weapons": []
+   "weapons": [
+    {
+     "Weapon_name": "pig",
+     "bullet": 777
+    }
+   ]
   },
   {
    "player_id": 88,
-   "player_name": "batman",
-   "current_weapon": "momey",
+   "player_name": "money man",
+   "current_weapon": "money",
    "weapon2bullet": {},
    "player_position": [
-    3,
+    1.2,
+    2.1,
+    3.2
+   ],
+   "player_hp": 1,
+   "player_armor": 1,
+   "weapons": []
+  },
+  {
+   "player_id": 16,
+   "player_name": "westbrook",
+   "current_weapon": "strong hand",
+   "weapon2bullet": {},
+   "player_position": [
     5,
-    9
+    0,
+    0
+   ],
+   "player_hp": 100,
+   "player_armor": 0,
+   "weapons": [
+    {
+     "Weapon_name": "little gun",
+     "bullet": 3
+    }
+   ]
+  },
+  {
+   "player_id": 23,
+   "player_name": "james",
+   "current_weapon": "donot know",
+   "weapon2bullet": {},
+   "player_position": [
+    0,
+    0,
+    100
    ],
    "player_hp": 100,
    "player_armor": 100,
    "weapons": [
     {
-     "Weapon_name": "batmobile",
-     "bullet": 0
-    },
-    {
-     "Weapon_name": "cloak",
+     "Weapon_name": "good brain",
      "bullet": 0
     }
    ]

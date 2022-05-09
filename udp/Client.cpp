@@ -20,6 +20,7 @@
 using namespace std;
 void *buffer[1024];
 char data[512];
+char *recv_buff[1024];
 struct sockaddr_in server_addr;
 /*
 int rudp_connect(struct rudp *U, int sockfd, struct sockaddr_in &sockaddr)
@@ -33,7 +34,7 @@ int rudp_connect(struct rudp *U, int sockfd, struct sockaddr_in &sockaddr)
     char *recv_buff[50];
     recv_size = recvfrom(sockfd, recv_buff, sizeof(recv_buff), 0, (struct sockaddr *)&server_addr, (socklen_t *)&len);
     dump(rudp_update(U, recv_buff, recv_size, 1), sockfd);
-    recv_size = dump_recv(U, recv_buff);
+    recv_size = rudp_input(U, recv_buff);
     cout << "recv_buff" << recv_buff << endl;
 }
 */
@@ -94,11 +95,19 @@ static int dump_recv(struct rudp *U, char **buff) // 这里的dump没有考虑�
     return size;
 }
 
-static void dump(struct rudp_package *p, int sockfd)
+int rudp_output(int sockfd, struct sockaddr_in &sockaddr){
+    int len = sizeof(sockaddr);
+    printf("接收调用: ");
+    int recv_size = recvfrom(sockfd, recv_buff, sizeof(recv_buff), 0, (struct sockaddr *)&sockaddr, (socklen_t *)&len);
+    printf("recv_size: %d\n", recv_size);
+    return recv_size;
+}
+
+static void rudp_send(struct rudp_package *p, int sockfd)
 {
     static int idx = 0;
     int size = 0;
-    printf("%d : ", idx++);
+    printf("send id : %d ", idx++);
     while (p)
     {
         memcpy(data, p->buffer, p->sz);
@@ -172,13 +181,14 @@ int main(int argc, char *argv[])
         printf("connect success!\n");
     }
     */
-    for (int i = 1; i <= 5; i++)
+    while(1)
     {
 
-        int size = 0, recv_size = 0;
-        char *recv_buff[1024];
-        recv_size = recvfrom(sockfd, recv_buff, sizeof(recv_buff), 0, (struct sockaddr *)&server_addr, (socklen_t *)&len);
-        dump(rudp_update(U, recv_buff, recv_size, 1), sockfd);
+        int size = 0;
+        //char *recv_buff[1024];
+        int recv_size = rudp_output(sockfd, server_addr);  //接收1
+
+        if(recv_size) rudp_send(rudp_update(U, recv_buff, recv_size, 1), sockfd); // 发送1
         recv_size = dump_recv(U, recv_buff);
 
         // write(1, buffer, size);
@@ -207,7 +217,7 @@ int main(int argc, char *argv[])
         }
         */
 
-        ListPeople(person_state);
+        //ListPeople(person_state);
         sleep(1);
     }
 

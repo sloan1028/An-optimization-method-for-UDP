@@ -189,27 +189,27 @@ int main(int argc, char *argv[])
 
     printf("%s\n", argv[1]);
 
+    tutorial::Gamer person_state;
+
+    {
+        // Read the existing address book.
+        fstream input(argv[1], ios::in | ios::binary);
+        if (!input)
+        {
+            cout << argv[1] << ": File not found.  Creating a new file." << endl;
+        }
+        else if (!person_state.ParseFromIstream(&input))
+        {
+            cerr << "Failed to parse preson state." << endl;
+            return -1;
+        }
+    }    
+
     while (1)
     {
 
-        tutorial::Gamer person_state;
-
-        {
-            // Read the existing address book.
-            fstream input(argv[1], ios::in | ios::binary);
-            if (!input)
-            {
-                cout << argv[1] << ": File not found.  Creating a new file." << endl;
-            }
-            else if (!person_state.ParseFromIstream(&input))
-            {
-                cerr << "Failed to parse preson state." << endl;
-                return -1;
-            }
-        }
-
         int op = 0;
-        printf("choose your option(1: add person, 2: modify person) : \n");
+        printf("choose your option(1: add person, 2: modify person, 3: save and exit) : \n");
         cin >> op;
         switch (op)
         {
@@ -223,47 +223,52 @@ int main(int argc, char *argv[])
         default:
             break;
         }
+        if(op == 3) break;
 
-        int size = person_state.ByteSizeLong();
-        void *buffer = malloc(size);
-        person_state.SerializeToArray(buffer, size);
+    }
 
-        //打印数据
-        string str3;
-        str3.assign((char *)buffer, size);
-        cout << str3 << endl;
 
-        string new_address = argv[1];
 
-        //修改地址, 如果不修改地址注释下面这行
-        new_address[13] += 1;
+    int size = person_state.ByteSizeLong();
+    void *buffer = malloc(size);
+    person_state.SerializeToArray(buffer, size);
 
-        // protobuf2json
-        string json_string;
-        if (!proto_to_json(person_state, json_string))
+    //打印数据
+    string str3;
+    str3.assign((char *)buffer, size);
+    cout << str3 << endl;
+
+    string new_address = argv[1];
+
+    //修改地址, 如果不修改地址注释下面这行
+    new_address[13] += 1;
+
+    // protobuf2json
+    string json_string;
+    if (!proto_to_json(person_state, json_string))
+    {
+        std::cout << "protobuf convert json failed!" << std::endl;
+        return -1;
+    }
+    string json_path = new_address.substr(0, 14) + ".json";
+    cout << json_path << endl;
+    write_to_file(json_path.c_str(), json_string);
+
+    std::cout << "protobuf convert json done!" << std::endl
+                << json_string << std::endl;
+    std::cout << "json size: " << json_string.size() << endl;
+    // protobuf2json
+
+    {
+        // Write the new address book back to disk.
+        fstream output(new_address.c_str(), ios::out | ios::trunc | ios::binary);
+        if (!person_state.SerializeToOstream(&output))
         {
-            std::cout << "protobuf convert json failed!" << std::endl;
+            cerr << "Failed to write person state." << endl;
             return -1;
         }
-        string json_path = new_address.substr(0, 14) + ".json";
-        cout << json_path << endl;
-        write_to_file(json_path.c_str(), json_string);
-
-        std::cout << "protobuf convert json done!" << std::endl
-                  << json_string << std::endl;
-        std::cout << "json size: " << json_string.size() << endl;
-        // protobuf2json
-
-        {
-            // Write the new address book back to disk.
-            fstream output(new_address.c_str(), ios::out | ios::trunc | ios::binary);
-            if (!person_state.SerializeToOstream(&output))
-            {
-                cerr << "Failed to write person state." << endl;
-                return -1;
-            }
-        }
     }
+
 
     // Optional:  Delete all global objects allocated by libprotobuf.
     google::protobuf::ShutdownProtobufLibrary();

@@ -25,6 +25,7 @@ using google::protobuf::util::BinaryToJsonStream;
 int sockfd;
 char buffer[1024];
 char data[512];
+char *recv_buff[1024];
 struct sockaddr_in client_sockaddr;
 #define BACKLOG 10
 #define MAXDATASIZE 5
@@ -58,10 +59,10 @@ void server_sock_init(struct sockaddr_in &sockaddr, char *port)
     bzero(&(sockaddr.sin_zero), 8);
 }
 
-static void dump_recv(struct rudp *U)
+static int dump_recv(struct rudp *U, char **buff) // 这里的dump没有考虑多包的情况
 {
     char tmp[MAX_PACKAGE];
-    int n;
+    int n, size = 0;
     while ((n = rudp_recv(U, tmp)))
     {
         if (n < 0)
@@ -76,17 +77,29 @@ static void dump_recv(struct rudp *U)
             printf("%02x ", (uint8_t)tmp[i]);
         }
         printf("\n");
+        memcpy(buff, tmp, n);
+        size = n;
     }
+    return size;
+}
+
+int rudp_output(int sockfd, struct sockaddr_in &sockaddr)
+{
+    int len = sizeof(sockaddr);
+    int recv_size = recvfrom(sockfd, recv_buff, sizeof(recv_buff), 0, (struct sockaddr *)&sockaddr, (socklen_t *)&len);
+    cout << "recv_size : " << recv_size << endl;
+    return recv_size;
 }
 
 // 打印并发送已经封装的包
-static void dump(struct rudp_package *p, int sockfd)
+static void rudp_send(struct rudp_package *p, int sockfd)
 {
     static int idx = 0;
     int size = 0;
-    printf("%d : ", idx++);
+    printf("send id : %d ", idx++);
     while (p)
     {
+        // if (rand() % 5 == 0) break;
         memcpy(data, p->buffer, p->sz);
         int i;
         for (i = 0; i < p->sz; i++)
@@ -97,6 +110,7 @@ static void dump(struct rudp_package *p, int sockfd)
         socklen_t len = sizeof(client_sockaddr);
         int send_num;
         if (p->sz > 0)
+            printf("发送了发送了 发送了%d的数量\n", p -> sz);
             send_num = sendto(sockfd, (void *)data, p->sz, 0, (struct sockaddr *)&client_sockaddr, len);
         if (send_num < 0)
         {
@@ -272,63 +286,73 @@ int main(int argc, char *argv[])
 
     tutorial::Gamer person_state;
     tutorial::Gamer pre_person_state;
-    for (int i = 1; i <= 5; i++)
+
+    int i = 1;
+    while (1)
     {
-        string file_path = "data/protobuf" + to_string(i) + ".data";
-
+        if (i <= 10)
         {
-            // Read the existing address book.
-            fstream input(file_path, ios::in | ios::binary);
-            if (!input)
+            string file_path = "data/protobuf" + to_string(i) + ".data";
+
             {
-                cout << file_path << ": File not found.  Creating a new file." << endl;
+                // Read the existing address book.
+                fstream input(file_path, ios::in | ios::binary);
+                if (!input)
+                {
+                    cout << file_path << ": File not found.  Creating a new file." << endl;
+                }
+                else if (!person_state.ParseFromIstream(&input))
+                {
+                    cerr << "Failed to parse preson state." << endl;
+                    return -1;
+                }
             }
-            else if (!person_state.ParseFromIstream(&input))
+
+            tutorial::Gamer state_difference = compare_state(person_state, pre_person_state);
+
+            int size = state_difference.ByteSizeLong();
+            void *buffer = malloc(size);
+            state_difference.SerializeToArray(buffer, size);
+            cout << "压缩前的数据: " << size << endl;
+            /*
+            //打印数据
+            string str3;
+            str3.assign((char *)buffer, size);
+            cout << str3 << endl;
+            */
+
+            // LZ4压缩
+            int src_size = size + 1;
+            int max_dst_size = LZ4_compressBound(src_size);
+            char *dst = new char[max_dst_size];
+            int dst_size = LZ4_compress_default((char *)buffer, dst, src_size, max_dst_size);
+
+            /*
+            send_num = sendto(sockfd, dst, dst_size, 0, (struct sockaddr *)&client_sockaddr, len);
+            if (send_num < 0)
             {
-                cerr << "Failed to parse preson state." << endl;
-                return -1;
+                perror("sendto error:");
+                exit(1);
             }
+            */
+
+            cout << "压缩后带发送的数据 :" << dst_size << endl;
+            rudp_input(U, dst, dst_size);
+
+            delete[] dst;
+            dst = NULL;
         }
 
-        tutorial::Gamer state_difference = compare_state(person_state, pre_person_state);
-
-        int size = state_difference.ByteSizeLong();
-        void *buffer = malloc(size);
-        state_difference.SerializeToArray(buffer, size);
-
-        /*
-        //打印数据
-        string str3;
-        str3.assign((char *)buffer, size);
-        cout << str3 << endl;
-        */
-
-        // LZ4压缩
-        int src_size = size + 1;
-        int max_dst_size = LZ4_compressBound(src_size);
-        char *dst = new char[max_dst_size];
-        int dst_size = LZ4_compress_default((char *)buffer, dst, src_size, max_dst_size);
-
-        /*
-        send_num = sendto(sockfd, dst, dst_size, 0, (struct sockaddr *)&client_sockaddr, len);
-        if (send_num < 0)
-        {
-            perror("sendto error:");
-            exit(1);
-        }
-        */
-
-        cout << "dst_size :" << dst_size << endl;
-        rudp_send(U, dst, dst_size);
-
-        dump(rudp_update(U, NULL, 0, 1), sockfd);
-
-        delete[] dst;
-        dst = NULL;
+        rudp_send(rudp_update(U, NULL, 0, 1), sockfd); // 发送1
 
         pre_person_state = person_state;
 
+        
+        int recv_size = rudp_output(sockfd, client_sockaddr); // 接收1
+        if(recv_size) rudp_update(U, recv_buff, recv_size, 0);
+        
         sleep(1);
+        i++;
     }
 
     // Optional:  Delete all global objects allocated by libprotobuf.

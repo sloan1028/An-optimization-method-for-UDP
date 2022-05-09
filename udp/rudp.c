@@ -207,7 +207,7 @@ static void array_insert(struct array *a, int id)
 }
 
 // 发送RUDP包（把包插入发送队列中等待周期发送）
-void rudp_send(struct rudp *U, const char *buffer, int sz)
+void rudp_input(struct rudp *U, const char *buffer, int sz)
 {
 	assert(sz <= MAX_PACKAGE);
 	struct message *m = new_message(U, (const uint8_t *)buffer, sz);
@@ -358,7 +358,7 @@ static void extract_package(struct rudp *U, const uint8_t *buffer, int sz)
 			if (U->send_again.n == 0)
 			{
 				// request next package id
-				array_insert(&U->send_again, U->recv_id_min);
+				//array_insert(&U->send_again, U->recv_id_min);
 			}
 			break;
 		case TYPE_CORRUPT: // 连接异常
@@ -581,8 +581,7 @@ send_message(struct rudp *U, struct tmp_buffer *tmp)
 	3. send message ( U->send_queue )
 	4. send heartbeat
  */
-static struct rudp_package *
-gen_outpackage(struct rudp *U)
+static struct rudp_package *gen_outpackage(struct rudp *U)
 {
 	struct tmp_buffer tmp;
 	tmp.sz = 0;
@@ -592,7 +591,8 @@ gen_outpackage(struct rudp *U)
 	request_missing(U, &tmp);
 	reply_request(U, &tmp);
 	send_message(U, &tmp);
-
+	printf("tmp -> sz : %d\n", tmp.sz); 
+	if(tmp.head) printf("tmp.head.size: %d\n", tmp.head->sz);
 	// close tmp
 
 	if (tmp.head == NULL)
@@ -611,10 +611,9 @@ gen_outpackage(struct rudp *U)
 //如果tick为0表示是在同一时间片内，不用急着处理数据，
 //当 tick 大于 0 时，才表示时间流逝，这时可以合并上个时间周期内的数据集中处理。
 
-//每次调用都有可能输出一系列需要发送出去的 UDP 包。这些数据包是由过去的 rudp_send 调用压入的数据产生的，
+//每次调用都有可能输出一系列需要发送出去的 UDP 包。这些数据包是由过去的 rudp_input 调用压入的数据产生的，
 //同时也包含了，对端请求重传的数据，以及在没有通讯数据时插入的心跳包等。
-struct rudp_package *
-rudp_update(struct rudp *U, const void *buffer, int sz, int tick)
+struct rudp_package *rudp_update(struct rudp *U, const void *buffer, int sz, int tick)
 {
 	U->current_tick += tick;
 	clear_outpackage(U); // 先把U的send_package清空

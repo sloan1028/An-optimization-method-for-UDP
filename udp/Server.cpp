@@ -59,6 +59,35 @@ void server_sock_init(struct sockaddr_in &sockaddr, char *port)
     bzero(&(sockaddr.sin_zero), 8);
 }
 
+int rudp_listening(struct rudp *U, int sockfd)
+{
+
+    int len = sizeof(sockaddr);
+    printf("waiting now 等待接收\n");
+    int recv_size = recvfrom(sockfd, recv_buff, sizeof(recv_buff), 0, (struct sockaddr *)&client_sockaddr, (socklen_t *)&len);
+    sleep(1);
+
+    printf("send response\n");
+    int send_num;
+    char send_buf[20] = "HandshakeRespon";
+    send_num = sendto(sockfd, send_buf, strlen(send_buf), 0, (struct sockaddr *)&client_sockaddr, len);
+    
+    if (send_num < 0)
+    {
+        perror("sendto error:");
+        exit(1);
+    }
+    sleep(1);
+
+
+    recv_size = recvfrom(sockfd, recv_buff, sizeof(recv_buff), 0, (struct sockaddr *)&client_sockaddr, (socklen_t *)&len);
+
+    printf("连接成功\n");
+    out_addr(&client_sockaddr);
+
+    return 1;
+}
+
 static int dump_recv(struct rudp *U, char **buff) // 这里的dump没有考虑多包的情况
 {
     char tmp[MAX_PACKAGE];
@@ -96,7 +125,7 @@ static void rudp_send(struct rudp_package *p, int sockfd)
 {
     static int idx = 0;
     int size = 0;
-    printf("send id : %d ", idx++);
+    printf("send id : %d \n", idx++);
     while (p)
     {
         // if (rand() % 5 == 0) break;
@@ -110,7 +139,6 @@ static void rudp_send(struct rudp_package *p, int sockfd)
         socklen_t len = sizeof(client_sockaddr);
         int send_num;
         if (p->sz > 0)
-            printf("发送了发送了 发送了%d的数量\n", p -> sz);
             send_num = sendto(sockfd, (void *)data, p->sz, 0, (struct sockaddr *)&client_sockaddr, len);
         if (send_num < 0)
         {
@@ -272,17 +300,13 @@ int main(int argc, char *argv[])
     printf("bind success!\n");
     struct rudp *U = rudp_new(1, 5);
 
-    printf("server wait:\n");
-    recv_num = recvfrom(sockfd, recv_buf, sizeof(recv_buf), 0, (struct sockaddr *)&client_sockaddr, (socklen_t *)&len);
-    if (recv_num < 0)
+    int con = rudp_listening(U, sockfd);
+    
+    if (con < 0)
     {
         perror("recvfrom error:");
         exit(1);
     }
-    out_addr(&client_sockaddr);
-
-    recv_buf[recv_num] = '\0';
-    printf("server receive %d bytes: %s\n", recv_num, recv_buf);
 
     tutorial::Gamer person_state;
     tutorial::Gamer pre_person_state;

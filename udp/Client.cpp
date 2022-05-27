@@ -22,22 +22,39 @@ void *buffer[1024];
 char data[512];
 char *recv_buff[1024];
 struct sockaddr_in server_addr;
-/*
+
 int rudp_connect(struct rudp *U, int sockfd, struct sockaddr_in &sockaddr)
 {
-    char send_connect[10] = "connect";
-    rudp_send(U, send_connect, strlen(send_connect));
-    dump(rudp_update(U, NULL, 0, 1), sockfd);
+    int len = sizeof(server_addr);
+    int send_num;
+    char send_buf[20] = "Handshake";
+    send_num = sendto(sockfd, send_buf, strlen(send_buf), 0, (struct sockaddr *)&server_addr, len);
+    printf("Handshake now\n");
+    if (send_num < 0)
+    {
+        perror("sendto error:");
+        exit(1);
+    }
+    sleep(1);
 
-    socklen_t len = sizeof(server_addr);
-    int recv_size = 0;
-    char *recv_buff[50];
-    recv_size = recvfrom(sockfd, recv_buff, sizeof(recv_buff), 0, (struct sockaddr *)&server_addr, (socklen_t *)&len);
-    dump(rudp_update(U, recv_buff, recv_size, 1), sockfd);
-    recv_size = rudp_input(U, recv_buff);
-    cout << "recv_buff" << recv_buff << endl;
+    int recv_size = recvfrom(sockfd, recv_buff, sizeof(recv_buff), 0, (struct sockaddr *)&sockaddr, (socklen_t *)&len);
+    printf("connect now\n");
+    sleep(1);
+
+
+    char send_buf2[20] = "connect";
+    send_num = sendto(sockfd, send_buf2, strlen(send_buf2), 0, (struct sockaddr *)&server_addr, len);
+
+    if (send_num < 0)
+    {
+        perror("sendto error:");
+        exit(1);
+    }
+
+    printf("连接成功\n");
+    return 1;
 }
-*/
+
 
 // Iterates though all people in the AddressBook and prints info about them.
 void ListPeople(const tutorial::Gamer &gamers)
@@ -153,41 +170,25 @@ int main(int argc, char *argv[])
     }
 
     client_sock_init(server_addr, argv[1], argv[2]);
-    int len = sizeof(server_addr);
-
-    int send_num;
-    char send_buf[20] = "hey, who are you?";
-
-    printf("client send: %s\n", send_buf);
-
-    send_num = sendto(sockfd, send_buf, strlen(send_buf), 0, (struct sockaddr *)&server_addr, len);
-
-    if (send_num < 0)
-    {
-        perror("sendto error:");
-        exit(1);
-    }
 
     struct rudp *U = rudp_new(1, 5);
-    /*
+    
     int con = rudp_connect(U, sockfd, server_addr);
+
     if (con < 0)
     {
         printf("connection failed\n");
         exit(1);
     }
-    else
-    {
-        printf("connect success!\n");
-    }
-    */
+    
+    
     while(1)
     {
 
         int size = 0;
         //char *recv_buff[1024];
         int recv_size = rudp_output(sockfd, server_addr);  //接收1
-
+        
         if(recv_size) rudp_send(rudp_update(U, recv_buff, recv_size, 1), sockfd); // 发送1
         recv_size = dump_recv(U, recv_buff);
 
@@ -200,6 +201,7 @@ int main(int argc, char *argv[])
         if (recv_size != 0)
             src_ex_size = LZ4_decompress_safe((char *)recv_buff, (char *)buffer, recv_size, max_src_ex_size);
         string str;
+        printf("%d\n", src_ex_size);
         str.assign((char *)buffer, src_ex_size);
         cout << "Decompression size : " << src_ex_size << endl;
 
@@ -220,6 +222,8 @@ int main(int argc, char *argv[])
         //ListPeople(person_state);
         sleep(1);
     }
+
+    
 
     close(sockfd);
 

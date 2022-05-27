@@ -5,8 +5,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
-//#define GENERAL_PACKAGE 512
-#define GENERAL_PACKAGE 128
+#define GENERAL_PACKAGE 512
+//#define GENERAL_PACKAGE 128
 
 struct message
 {
@@ -108,7 +108,7 @@ static struct message *new_message(struct rudp *U, const uint8_t *buffer, int sz
 	{
 		U->free_list = tmp->next; // 删除free_list的头部, 也就是把tmp在freelist中删掉
 		if (tmp->cap < sz)
-		{ //如果tmp的cap小于sz，就不要了   这里可能是想重复利用free_list的空间把
+		{ //如果tmp的cap小于sz，就不要了   重复利用free_list的空间把
 			free(tmp);
 			tmp = NULL;
 		}
@@ -385,10 +385,15 @@ static void extract_package(struct rudp *U, const uint8_t *buffer, int sz)
 			else
 			{
 				int id = get_id(U, buffer);
-				insert_message(U, id, buffer + 2, len); // 把消息插入message中
+				insert_message(U, id, buffer + 4, len); // 把消息插入message中
+				// 原
+				// insert_message(U, id, buffer + 2, len); // 把消息插入message中
 			}
-			buffer += len + 2;
-			sz -= len + 2;
+
+			// 这里改过了分包组包
+			buffer += len + 4;
+			sz -= len + 4;
+
 			break;
 		}
 	}
@@ -441,7 +446,12 @@ static int fill_header(uint8_t *buf, int len, int id)
 	}
 	buf[0] = (id & 0xff00) >> 8;
 	buf[1] = id & 0xff;
-	return sz + 2;
+
+	//这里加了一行用来区分是否分包了
+	buf[2] = 0x80;
+	buf[3] = 0x00;
+
+	return sz + 4;
 }
 
 // 打包请求包
